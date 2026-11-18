@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Islamic Art Prints - Invoice List & App Dashboard</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5c1b82">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Art Prints Memo">
+  <link rel="icon" type="image/png" href="static/icon-192.png">
+  <link rel="apple-touch-icon" href="static/icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary-purple: #5c1b82;
+      --primary-gradient: linear-gradient(135deg, #591980 0%, #6e219b 100%);
+      --accent-purple: #7527a4;
+      --light-purple-bg: #f8f4fc;
+      --light-border: #d9c4e8;
+      --text-dark: #1f152b;
+      --success-green: #10b981;
+      --danger-red: #ef4444;
+      --warning-orange: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: #eef0f6;
+      color: var(--text-dark);
+      padding: 24px 16px 50px 16px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .dashboard-container {
+      max-width: 1320px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Top Navigation Bar */
+    .dashboard-header {
+      background: #ffffff;
+      padding: 16px 24px;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(92, 27, 130, 0.08);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-title h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary-purple);
+      line-height: 1.2;
+    }
+
+    .brand-title p {
+      font-size: 0.82rem;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-install {
+      background: #fdf2e9;
+      color: #d97706;
+      border: 1.5px solid #f59e0b;
+    }
+    .btn-install:hover {
+      background: #d97706;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+    }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(92, 27, 130, 0.3);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 16px rgba(92, 27, 130, 0.45);
+      transform: translateY(-1px);
+    }
+
+    /* KPI Summary Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      padding: 18px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      border-left: 4px solid var(--primary-purple);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-info p {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-info h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1a1a1a;
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .stat-card.sales { border-left-color: #6e219b; }
+    .stat-card.sales .stat-icon { background: #f3ecf9; color: #6e219b; }
+
+    .stat-card.paid { border-left-color: var(--success-green); }
+    .stat-card.paid .stat-icon { background: #ecfdf5; color: var(--success-green); }
+
+    .stat-card.due { border-left-color: var(--danger-red); }
+    .stat-card.due .stat-icon { background: #fef2f2; color: var(--danger-red); }
+
+    .stat-card.count { border-left-color: #3b82f6; }
+    .stat-card.count .stat-icon { background: #eff6ff; color: #3b82f6; }
+
+    /* Main Content Section */
+    .content-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Filter & Search Bar - Two Rows Layout */
+    .filter-section-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .filter-tabs-bar {
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .status-tabs-group {
+      display: inline-flex;
+      align-items: center;
+      background: #f1ecf7;
+      padding: 5px;
+      border-radius: 10px;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .tab-divider {
+      width: 1px;
+      height: 20px;
+      background: #d8cde3;
+      margin: 0 4px;
+    }
+
+    .status-tab-btn {
+      border: none;
+      background: transparent;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      color: #555;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .status-tab-btn:hover {
+      color: var(--primary-purple);
+      background: rgba(92, 27, 130, 0.08);
+    }
+
+    .status-tab-btn.active {
+      background: #ffffff;
+      color: var(--primary-purple);
+      box-shadow: 0 2px 8px rgba(92, 27, 130, 0.15);
+    }
+
+    .status-tab-btn.tab-paid.active {
+      color: #059669;
+    }
+    .status-tab-btn.tab-due.active {
+      color: #d97706;
+    }
+    .status-tab-btn.tab-unpaid.active {
+      color: #dc2626;
+    }
+    .status-tab-btn.tab-pending.active {
+      color: #b45309;
+    }
+    .status-tab-btn.tab-delivered.active {
+      color: #047857;
+    }
+
+    .tab-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.07);
+      color: #555;
+      line-height: 1.2;
+    }
+    .status-tab-btn.active .tab-badge {
+      background: var(--light-purple-bg);
+      color: var(--primary-purple);
+    }
+    .status-tab-btn.tab-paid.active .tab-badge {
+      background: #d1fae5;
+      color: #059669;
+    }
+    .status-tab-btn.tab-due.active .tab-badge {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .status-tab-btn.tab-unpaid.active .tab-badge {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .status-tab-btn.tab-pending.active .tab-badge {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .status-tab-btn.tab-delivered.active .tab-badge {
+      background: #d1fae5;
+      color: #047857;
+    }
+
+    /* Bottom Row: Search & Select Filter */
+    .filter-search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      width: 100%;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 0.95rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1.5px solid #d5d9e2;
+      border-radius: 8px;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary-purple);
+      box-shadow: 0 0 0 3px rgba(92, 27, 130, 0.1);
+    }
+
+    .filter-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .select-status {
+      padding: 9px 14px;
+      border: 1.5px solid #d5d9e2;
+      border-radius: 8px;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #333;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .select-status:focus {
+      border-color: var(--primary-purple);
+    }
+
+    /* Invoices Table - Compact fit to prevent horizontal scrolling */
+    .table-responsive {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .invoice-table th {
+      background: #faf8fc;
+      color: #4b3d57;
+      text-align: left;
+      padding: 9px 8px;
+      font-weight: 700;
+      border-bottom: 2px solid #e7deee;
+      white-space: nowrap;
+      font-size: 0.82rem;
+    }
+
+    .invoice-table td {
+      padding: 9px 8px;
+      border-bottom: 1px solid #f0eaf4;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .invoice-table tr:hover td {
+      background: #fbf9fd;
+    }
+
+    .inv-badge {
+      font-weight: 700;
+      color: var(--primary-purple);
+      background: #f1e6f7;
+      padding: 2px 7px;
+      border-radius: 5px;
+      display: inline-block;
+      font-size: 0.8rem;
+    }
+
+    .inv-badge-btn {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--primary-purple);
+      background: #f1e6f7;
+      border: 1px solid #d9c1eb;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .inv-badge-btn:hover {
+      background: var(--primary-purple);
+      color: #ffffff;
+      border-color: var(--primary-purple);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(92, 27, 130, 0.25);
+    }
+
+    /* Status Combo Cell (e.g. Paid / Delivered) */
+    .status-combo-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .status-badge {
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+    .status-paid {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .status-due {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .status-unpaid {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-slash {
+      color: #a497b0;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    .delivery-status-pill {
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+    .delivery-status-pill.deliv-done {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .delivery-status-pill.deliv-wait {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    /* Deliver Button Action */
+    .btn-deliver-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      border: 1px solid;
+    }
+    .btn-deliver-action.is-pending {
+      background: #fffbeb;
+      color: #b45309;
+      border-color: #f59e0b;
+    }
+    .btn-deliver-action.is-pending:hover {
+      background: #f59e0b;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+      transform: translateY(-1px);
+    }
+    .btn-deliver-action.is-delivered {
+      background: #ecfdf5;
+      color: #059669;
+      border-color: #10b981;
+    }
+    .btn-deliver-action.is-delivered:hover {
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .action-btns {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-action {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.88rem;
+      padding: 5px;
+      border-radius: 5px;
+      transition: all 0.15s;
+    }
+      transition: all 0.15s;
+    }
+    .btn-action.view { color: var(--primary-purple); background: #f3ecf8; }
+    .btn-action.view:hover { background: var(--primary-purple); color: #fff; }
+
+    .btn-action.delete { color: #dc2626; background: #fee2e2; }
+    .btn-action.delete:hover { background: #dc2626; color: #fff; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+    }
+    .empty-state i {
+      font-size: 3.5rem;
+      color: #c9b4dc;
+      margin-bottom: 14px;
+    }
+    .empty-state h3 {
+      font-size: 1.15rem;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .empty-state p {
+      font-size: 0.88rem;
+      color: #777;
+      margin-bottom: 18px;
+    }
+
+    /* Install Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      max-width: 500px;
+      width: 100%;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+      animation: modalFadeIn 0.2s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.2rem;
+      color: var(--primary-purple);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #777;
+    }
+    .btn-close:hover { color: #111; }
+
+    .modal-body p {
+      font-size: 0.9rem;
+      color: #444;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .install-steps {
+      background: #f8f4fc;
+      border: 1px solid var(--light-border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 0.88rem;
+      color: #222;
+    }
+    .install-steps ol {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-search-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-box {
+        max-width: 100%;
+      }
+      .status-tabs-group {
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 5px;
+      }
+      .filter-controls {
+        width: 100%;
+      }
+      .select-status {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+
+    <!-- Top Navigation Header -->
+    <header class="dashboard-header">
+      <div class="brand-group">
+        <img src="static/Islamic Art Prints Logo.png" alt="Islamic Art Prints" class="brand-logo" onerror="this.onerror=null; this.src='https://placehold.co/140x50/5c1b82/ffffff?text=LOGO'">
+        <div class="brand-title">
+          <h1>Islamic Art Prints</h1>
+          <p>Invoice Management & App Dashboard</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Install App Option -->
+        <button type="button" class="btn btn-install" onclick="handleInstallClick()" title="Install this app on your PC or phone">
+          <i class="fa-solid fa-download"></i> Install App
+        </button>
+        <!-- Create New Cash Memo -->
+        <a href="index.html" class="btn btn-primary" title="Create a new cash memo">
+          <i class="fa-solid fa-plus"></i> + Create Cash Memo
+        </a>
+      </div>
+    </header>
+
+    <!-- Summary KPI Cards -->
+    <section class="stats-grid">
+      <div class="stat-card count">
+        <div class="stat-info">
+          <p>Total Invoices</p>
+          <h2 id="totalCount">0</h2>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-file-invoice"></i>
+        </div>
+      </div>
+
+      <div class="stat-card sales">
+        <div class="stat-info">
+          <p>Total Amount</p>
+          <h2>৳<span id="totalSales">0.00</span></h2>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-sack-dollar"></i>
+        </div>
+      </div>
+
+      <div class="stat-card paid">
+        <div class="stat-info">
+          <p>Total Paid</p>
+          <h2>৳<span id="totalPaid">0.00</span></h2>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+      </div>
+
+      <div class="stat-card due">
+        <div class="stat-info">
+          <p>Total Due</p>
+          <h2>৳<span id="totalDue">0.00</span></h2>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-clock"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Invoices List Card -->
+    <main class="content-card">
+      <!-- Search & Filter Controls (Top: Status & Delivery Tabs, Bottom: Search Input) -->
+      <div class="filter-section-wrapper">
+        <!-- Top Row: Status Tabs including Pending & Delivered -->
+        <div class="filter-tabs-bar">
+          <div class="status-tabs-group">
+            <button type="button" class="status-tab-btn active" data-status="all" onclick="setStatusFilter('all')">
+              All <span class="tab-badge" id="countAll">0</span>
+            </button>
+            <button type="button" class="status-tab-btn tab-paid" data-status="paid" onclick="setStatusFilter('paid')">
+              <i class="fa-solid fa-circle-check"></i> Paid <span class="tab-badge" id="countPaid">0</span>
+            </button>
+            <button type="button" class="status-tab-btn tab-due" data-status="due" onclick="setStatusFilter('due')">
+              <i class="fa-solid fa-clock"></i> Due <span class="tab-badge" id="countDue">0</span>
+            </button>
+            <button type="button" class="status-tab-btn tab-unpaid" data-status="unpaid" onclick="setStatusFilter('unpaid')">
+              <i class="fa-solid fa-circle-exclamation"></i> Unpaid <span class="tab-badge" id="countUnpaid">0</span>
+            </button>
+
+            <span class="tab-divider"></span>
+
+            <button type="button" class="status-tab-btn tab-pending" data-status="pending" onclick="setStatusFilter('pending')">
+              <i class="fa-solid fa-hourglass-half"></i> Pending <span class="tab-badge" id="countPending">0</span>
+            </button>
+            <button type="button" class="status-tab-btn tab-delivered" data-status="delivered" onclick="setStatusFilter('delivered')">
+              <i class="fa-solid fa-truck"></i> Delivered <span class="tab-badge" id="countDelivered">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Search Box & Select Dropdown -->
+        <div class="filter-search-bar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by Customer Name, Phone, or Invoice #..." oninput="filterInvoices()">
+          </div>
+
+          <div class="filter-controls">
+            <select id="statusFilter" class="select-status" onchange="onDropdownStatusChange()">
+              <option value="all">All Status</option>
+              <option value="paid">Paid</option>
+              <option value="due">Due</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="pending">Pending Delivery</option>
+              <option value="delivered">Delivered</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoices Table -->
+      <div class="table-responsive">
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Date</th>
+              <th>Customer Name</th>
+              <th>Phone</th>
+              <th>Total (৳)</th>
+              <th>Paid (৳)</th>
+              <th>Due (৳)</th>
+              <th>Status</th>
+              <th>Delivery</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <i class="fa-regular fa-folder-open"></i>
+        <h3>No invoices found</h3>
+        <p>You haven't created any invoices matching your search.</p>
+        <a href="index.html" class="btn btn-primary">
+          <i class="fa-solid fa-plus"></i> Create New Cash Memo
+        </a>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Install App Modal -->
+  <div class="modal-overlay" id="installModal">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-laptop-arrow-down"></i> Install Islamic Art Prints App</h3>
+        <button class="btn-close" onclick="closeInstallModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 14px;">
+          এই ক্যাশ মেমো ও ইনভয়েস সিস্টেমটি আপনি আপনার <strong>ল্যাপটপ, কম্পিউটার বা মোবাইলে</strong> সরাসরি একটি পূর্ণাঙ্গ অ্যাপ হিসেবে ইন্সটল করে হোম স্ক্রিন বা ডেস্কটপ থেকে ১ ক্লিকে ব্যবহার করতে পারবেন!
+        </p>
+        
+        <div class="install-steps" style="background: #fdf8ff; border: 1.5px solid #d9c4e8; border-radius: 10px; padding: 14px;">
+          <strong style="color: var(--primary-purple); font-size: 0.95rem;"><i class="fa-solid fa-laptop"></i> ল্যাপটপ বা কম্পিউটারে (Chrome / Edge):</strong>
+          <ol style="margin-top: 6px; padding-left: 20px; font-size: 0.88rem; line-height: 1.6;">
+            <li>ব্রাউজারের এড্রেস বারের ডানপাশে <strong>Install আইকন (🖥️ বা ➕)</strong> এ ক্লিক করুন।</li>
+            <li>অথবা ব্রাউজারের উপরে ডানদিকের <strong>৩ ডট (⋮)</strong> মেনু ক্লিক করুন।</li>
+            <li><strong>"Install Islamic Art Prints..."</strong> বা <strong>"Apps > Install"</strong> এ ক্লিক করলেই অ্যাপ ইন্সটল হয়ে যাবে!</li>
+          </ol>
+
+          <strong style="color: var(--primary-purple); font-size: 0.95rem; display: block; margin-top: 10px;"><i class="fa-solid fa-mobile-screen-button"></i> মোবাইলে (Android / iPhone):</strong>
+          <ol style="margin-top: 6px; padding-left: 20px; font-size: 0.88rem; line-height: 1.6;">
+            <li>মোবাইলে ক্রোম ব্রাউজারের <strong>৩ ডট (⋮)</strong> মেনুতে চাপ দিন।</li>
+            <li><strong>"Add to Home screen"</strong> (হোম স্ক্রিনে যোগ করুন) সিলেক্ট করুন।</li>
+          </ol>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
+          <button type="button" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;" onclick="triggerNativeInstall()">
+            <i class="fa-solid fa-download"></i> ব্রাউজার থেকে সরাসরি Install করুন
+          </button>
+          <button type="button" class="btn btn-outline" style="width: 100%; justify-content: center; padding: 10px;" onclick="downloadDesktopShortcut()">
+            <i class="fa-solid fa-desktop"></i> Desktop App Shortcut (.bat) ডাউনলোড করুন
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // In-memory / LocalStorage Invoices Storage
+    const STORAGE_KEY = 'memo_invoices_database';
+
+    // Sample default starter data if none exists
+    const defaultInvoices = [
+      {
+        id: 'inv_0001',
+        number: '#0001',
+        date: '19/11/2026',
+        name: 'JOY VAI',
+        phone: '87685765',
+        total: 60,
+        paid: 60,
+        due: 0,
+        status: 'paid',
+        deliveryStatus: 'delivered'
+      },
+      {
+        id: 'inv_0002',
+        number: '#0002',
+        date: '19/11/2026',
+        name: 'Mohammad Abdullah',
+        phone: '01712-987654',
+        total: 3500,
+        paid: 2000,
+        due: 1500,
+        status: 'due',
+        deliveryStatus: 'pending'
+      }
+    ];
+
+    let currentStatus = 'all';
+
+    function getInvoices() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (!data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultInvoices));
+        return defaultInvoices;
+      }
+      try {
+        let list = JSON.parse(data);
+        // Ensure deliveryStatus exists for backwards compatibility
+        let changed = false;
+        list.forEach(inv => {
+          if (!inv.deliveryStatus) {
+            inv.deliveryStatus = (inv.number === '#0001') ? 'delivered' : 'pending';
+            changed = true;
+          }
+        });
+        if (changed) saveInvoices(list);
+        return list;
+      } catch(e) {
+        return defaultInvoices;
+      }
+    }
+
+    function saveInvoices(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    // Determine status of invoice: 'paid', 'due', or 'unpaid'
+    function getInvoiceStatus(inv) {
+      const total = parseFloat(inv.total) || 0;
+      const paid = parseFloat(inv.paid) || 0;
+      const due = parseFloat(inv.due) || 0;
+
+      if (due <= 0) return 'paid';
+      if (paid > 0 && due > 0) return 'due';
+      return 'unpaid';
+    }
+
+    // Delivery Status Helper
+    function getDeliveryStatus(inv) {
+      if (inv.deliveryStatus) return inv.deliveryStatus;
+      if (inv.number === '#0001') return 'delivered';
+      return 'pending';
+    }
+
+    // Toggle Delivery Status (Pending <-> Delivered)
+    function toggleDelivery(invNumber) {
+      let all = getInvoices();
+      const inv = all.find(item => item.number === invNumber || item.id === invNumber);
+      if (inv) {
+        const cur = getDeliveryStatus(inv);
+        inv.deliveryStatus = (cur === 'delivered') ? 'pending' : 'delivered';
+        saveInvoices(all);
+        filterInvoices();
+      }
+    }
+
+    // Update Status Tab Counter Badges
+    function updateStatusBadges(allInvoices) {
+      let countAll = allInvoices.length;
+      let countPaid = 0;
+      let countDue = 0;
+      let countUnpaid = 0;
+      let countPending = 0;
+      let countDelivered = 0;
+
+      allInvoices.forEach(inv => {
+        const paySt = getInvoiceStatus(inv);
+        if (paySt === 'paid') countPaid++;
+        else if (paySt === 'due') countDue++;
+        else if (paySt === 'unpaid') countUnpaid++;
+
+        const delivSt = getDeliveryStatus(inv);
+        if (delivSt === 'delivered') countDelivered++;
+        else countPending++;
+      });
+
+      const bAll = document.getElementById('countAll');
+      const bPaid = document.getElementById('countPaid');
+      const bDue = document.getElementById('countDue');
+      const bUnpaid = document.getElementById('countUnpaid');
+      const bPending = document.getElementById('countPending');
+      const bDelivered = document.getElementById('countDelivered');
+
+      if (bAll) bAll.textContent = countAll;
+      if (bPaid) bPaid.textContent = countPaid;
+      if (bDue) bDue.textContent = countDue;
+      if (bUnpaid) bUnpaid.textContent = countUnpaid;
+      if (bPending) bPending.textContent = countPending;
+      if (bDelivered) bDelivered.textContent = countDelivered;
+    }
+
+    // Status Filter Switcher
+    function setStatusFilter(status) {
+      currentStatus = status;
+
+      // Update active class on tab buttons
+      document.querySelectorAll('.status-tab-btn').forEach(btn => {
+        if (btn.getAttribute('data-status') === status) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Synchronize with dropdown
+      const sel = document.getElementById('statusFilter');
+      if (sel) sel.value = status;
+
+      filterInvoices();
+    }
+
+    function onDropdownStatusChange() {
+      const sel = document.getElementById('statusFilter');
+      if (sel) {
+        setStatusFilter(sel.value);
+      }
+    }
+
+    // Render Table and KPIs
+    function renderDashboard(invoices) {
+      const tbody = document.getElementById('invoiceTableBody');
+      const emptyState = document.getElementById('emptyState');
+      tbody.innerHTML = '';
+
+      if (invoices.length === 0) {
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+        invoices.forEach(inv => {
+          const tr = document.createElement('tr');
+          const paySt = getInvoiceStatus(inv);
+          const delivSt = getDeliveryStatus(inv);
+          const isDelivered = (delivSt === 'delivered');
+
+          let payBadge = '';
+          let dueColor = '#ef4444';
+
+          if (paySt === 'paid') {
+            payBadge = '<span class="status-badge status-paid"><i class="fa-solid fa-circle-check"></i> Paid</span>';
+            dueColor = '#10b981';
+          } else if (paySt === 'due') {
+            payBadge = '<span class="status-badge status-due"><i class="fa-solid fa-clock"></i> Due</span>';
+            dueColor = '#d97706';
+          } else {
+            payBadge = '<span class="status-badge status-unpaid"><i class="fa-solid fa-circle-exclamation"></i> Unpaid</span>';
+            dueColor = '#dc2626';
+          }
+
+          const delivPill = isDelivered 
+            ? '<span class="delivery-status-pill deliv-done"><i class="fa-solid fa-truck"></i> Delivered</span>'
+            : '<span class="delivery-status-pill deliv-wait"><i class="fa-solid fa-clock"></i> Pending</span>';
+
+          const deliverBtn = isDelivered
+            ? `<button type="button" class="btn-deliver-action is-delivered" onclick="toggleDelivery('${inv.number}')" title="Delivered! Click to switch back to Pending"><i class="fa-solid fa-circle-check"></i> Delivered</button>`
+            : `<button type="button" class="btn-deliver-action is-pending" onclick="toggleDelivery('${inv.number}')" title="Click to mark as Delivered"><i class="fa-solid fa-truck-fast"></i> Deliver</button>`;
+
+          tr.innerHTML = `
+            <td>
+              <button type="button" class="inv-badge-btn" onclick="openInvoice('${inv.number}')" title="Click to open this order/memo">
+                <i class="fa-solid fa-file-invoice"></i> ${inv.number}
+              </button>
+            </td>
+            <td>${inv.date}</td>
+            <td>
+              <strong style="cursor: pointer; color: #1f152b; display: inline-block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;" onclick="openInvoice('${inv.number}')" title="${inv.name || 'Walk-in Customer'}">${inv.name || 'Walk-in Customer'}</strong>
+            </td>
+            <td><span style="display: inline-block; max-width: 110px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;">${inv.phone || 'N/A'}</span></td>
+            <td>৳${parseFloat(inv.total).toFixed(2)}</td>
+            <td>৳${parseFloat(inv.paid).toFixed(2)}</td>
+            <td style="color: ${dueColor}; font-weight: 700;">৳${parseFloat(inv.due).toFixed(2)}</td>
+            <td>
+              <div class="status-combo-cell">
+                ${payBadge}
+                <span class="status-slash">/</span>
+                ${delivPill}
+              </div>
+            </td>
+            <td>
+              ${deliverBtn}
+            </td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-action view" title="View / Print Memo" onclick="openInvoice('${inv.number}')">
+                  <i class="fa-solid fa-print"></i>
+                </button>
+                <button class="btn-action delete" title="Delete Invoice" onclick="deleteInvoice('${inv.id || inv.number}')">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Calculate Total Stats
+      let totalSales = 0;
+      let totalPaid = 0;
+      let totalDue = 0;
+
+      invoices.forEach(inv => {
+        totalSales += parseFloat(inv.total) || 0;
+        totalPaid += parseFloat(inv.paid) || 0;
+        totalDue += parseFloat(inv.due) || 0;
+      });
+
+      document.getElementById('totalCount').textContent = invoices.length;
+      document.getElementById('totalSales').textContent = totalSales.toFixed(2);
+      document.getElementById('totalPaid').textContent = totalPaid.toFixed(2);
+      document.getElementById('totalDue').textContent = totalDue.toFixed(2);
+    }
+
+    // Search and Filter Invoices
+    function filterInvoices() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const all = getInvoices();
+
+      // Update counters based on all stored invoices
+      updateStatusBadges(all);
+
+      const filtered = all.filter(inv => {
+        const matchesQuery = (
+          (inv.number && inv.number.toLowerCase().includes(query)) ||
+          (inv.name && inv.name.toLowerCase().includes(query)) ||
+          (inv.phone && inv.phone.toLowerCase().includes(query)) ||
+          (inv.date && inv.date.toLowerCase().includes(query))
+        );
+
+        const paySt = getInvoiceStatus(inv);
+        const delivSt = getDeliveryStatus(inv);
+
+        let matchesStatus = true;
+        if (currentStatus === 'paid') matchesStatus = (paySt === 'paid');
+        else if (currentStatus === 'due') matchesStatus = (paySt === 'due');
+        else if (currentStatus === 'unpaid') matchesStatus = (paySt === 'unpaid');
+        else if (currentStatus === 'pending') matchesStatus = (delivSt === 'pending');
+        else if (currentStatus === 'delivered') matchesStatus = (delivSt === 'delivered');
+
+        return matchesQuery && matchesStatus;
+      });
+
+      renderDashboard(filtered);
+    }
+
+    // Open/Print an invoice in index.html
+    function openInvoice(invNumber) {
+      window.location.href = `index.html?inv=${encodeURIComponent(invNumber)}`;
+    }
+
+    // Delete Invoice
+    function deleteInvoice(idOrNum) {
+      if (confirm('Are you sure you want to delete this invoice record?')) {
+        let all = getInvoices();
+        all = all.filter(inv => (inv.id !== idOrNum && inv.number !== idOrNum));
+        saveInvoices(all);
+        filterInvoices();
+      }
+    }
+
+    // Install Modal & App Launcher Handlers
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.querySelector('.btn-install');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-download"></i> Install App Now';
+    });
+
+    function handleInstallClick() {
+      if (deferredPrompt) {
+        triggerNativeInstall();
+      } else {
+        openInstallModal();
+      }
+    }
+
+    function openInstallModal() {
+      document.getElementById('installModal').style.display = 'flex';
+    }
+
+    function closeInstallModal() {
+      document.getElementById('installModal').style.display = 'none';
+    }
+
+    function triggerNativeInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            alert('App successfully installed! You can now launch it anytime from your desktop or home screen.');
+          }
+          deferredPrompt = null;
+          closeInstallModal();
+        });
+      } else {
+        alert('Chrome / Edge থেকে ইন্সটল করতে: উপরে ডানে ৩-ডট (⋮) মেনু চাপুন এবং "Install app" বা "Add to Home screen" চাপুন। অথবা নিচে "Desktop App Shortcut (.bat)" বাটনে ক্লিক করুন।');
+      }
+    }
+
+    // 1-Click Desktop Shortcut Generator
+    function downloadDesktopShortcut() {
+      const currentUrl = window.location.href.replace('invoices.html', 'index.html');
+      const batScript = `@echo off
+title Islamic Art Prints Cash Memo App
+echo Opening Islamic Art Prints App in standalone window...
+start msedge --app="${currentUrl}" || start chrome --app="${currentUrl}" || start "" "${currentUrl}"
+exit
+`;
+      const blob = new Blob([batScript], { type: 'application/octet-stream' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Islamic_Art_Prints_App.bat';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // Close modal on click outside
+    window.onclick = function(e) {
+      const modal = document.getElementById('installModal');
+      if (e.target === modal) {
+        closeInstallModal();
+      }
+    };
+
+    // On Load
+    window.onload = function() {
+      filterInvoices();
+    };
+  </script>
+</body>
+</html>

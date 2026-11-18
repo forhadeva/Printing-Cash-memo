@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Islamic Art Prints - Cash Memo & Invoice Generator</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5c1b82">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Art Prints Memo">
+  <link rel="icon" type="image/png" href="static/icon-192.png">
+  <link rel="apple-touch-icon" href="static/icon-192.png">
+
+  <!-- Google Fonts: Outfit, Plus Jakarta Sans, Inter, Noto Sans Bengali, & Great Vibes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Base64 Embedded Assets (Prevents Tainted Canvas CORS error on file://) -->
+  <script src="static/images_data.js"></script>
+
+  <!-- HTML2Canvas & HTML2PDF for Save as Image and Save as PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --primary-purple: #5c1b82;
+      --primary-gradient: linear-gradient(135deg, #591980 0%, #6e219b 100%);
+      --accent-purple: #7527a4;
+      --light-purple-bg: #f8f4fc;
+      --purple-border: #8b3abf;
+      --light-border: #b886d9;
+      --text-dark: #1f152b;
+      --badge-subtle: #f0e6f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', 'Noto Sans Bengali', -apple-system, sans-serif;
+      background: #e9e3f0;
+      color: var(--text-dark);
+      padding: 24px 16px 50px 16px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Font Selector Control */
+    .font-selector-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      border: 1.5px solid #d8c2e9;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--primary-purple);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .font-selector-wrap select {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-purple);
+      cursor: pointer;
+    }
+
+    /* Top Control Bar */
+    .app-header {
+      max-width: 820px;
+      width: 100%;
+      margin: 0 auto 14px auto;
+      background: #ffffff;
+      padding: 10px 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(92, 27, 130, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .brand-app-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary-purple);
+      white-space: nowrap;
+    }
+
+    .brand-app-title i {
+      font-size: 1.15rem;
+      color: #6e219b;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: inherit;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-pdf {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1.5px solid #f87171;
+    }
+    .btn-pdf:hover {
+      background: #dc2626;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-image {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1.5px solid #34d399;
+    }
+    .btn-image:hover {
+      background: #059669;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(92, 27, 130, 0.35);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4d1470 0%, #601b87 100%);
+      box-shadow: 0 6px 16px rgba(92, 27, 130, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: #ffffff;
+      color: var(--primary-purple);
+      border: 1.5px solid var(--primary-purple);
+    }
+    .btn-outline:hover {
+      background: var(--light-purple-bg);
+    }
+
+    .btn-secondary {
+      background: #f1e7f8;
+      color: var(--primary-purple);
+    }
+    .btn-secondary:hover {
+      background: #e3d2ef;
+    }
+
+    .btn-visit {
+      background: #f1e7f8;
+      color: var(--primary-purple);
+      border: 1.5px solid var(--primary-purple);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .btn-visit:hover {
+      background: var(--primary-purple);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(92, 27, 130, 0.25);
+    }
+
+    /* Quick helper banner */
+    .helper-tip {
+      max-width: 820px;
+      margin: 0 auto 16px auto;
+      background: #fff8e6;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      color: #78350f;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .helper-tip i {
+      color: #d97706;
+      font-size: 1.1rem;
+    }
+
+    /* Memo Page Sheet (Exact replica of Reference Image) */
+    .memo-container {
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 4px;
+      box-shadow: 0 10px 35px rgba(66, 15, 96, 0.15);
+      position: relative;
+      overflow: hidden;
+      padding: 30px 38px 0 38px;
+    }
+
+    /* Top Section */
+    .memo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    /* Left: Logo & Company Name */
+    .brand-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 200px;
+      text-align: center;
+    }
+
+    .logo-wrapper {
+      position: relative;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .logo-wrapper img {
+      width: 175px;
+      height: auto;
+      max-height: 90px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .logo-change-hint {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(92, 27, 130, 0.9);
+      color: white;
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .logo-wrapper:hover .logo-change-hint {
+      opacity: 1;
+    }
+
+    .brand-title-text {
+      margin-top: 4px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.6px;
+      color: #0b0b0b;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+    .brand-title-text span {
+      font-weight: 500;
+      font-style: italic;
+      color: #2b2b2b;
+      text-transform: capitalize;
+      letter-spacing: normal;
+    }
+
+    /* Middle: Contact Info */
+    .company-contact {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
+      color: #1a1a1a;
+      font-weight: 500;
+      margin-top: 2px;
+      flex: 1.4;
+      padding: 0 4px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contact-item.address-2line {
+      align-items: flex-start;
+    }
+    .contact-item.address-2line i {
+      margin-top: 3px;
+    }
+    .address-text-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      width: 100%;
+    }
+    .address-text-lines input {
+      padding: 0 4px;
+      line-height: 1.25;
+      font-size: 0.81rem;
+    }
+
+    .contact-item i {
+      color: var(--primary-purple);
+      font-size: 0.92rem;
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .contact-item input {
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      font-weight: 500;
+      background: transparent;
+      width: 100%;
+      padding: 1px 4px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .contact-item input:hover, .contact-item input:focus {
+      background: var(--light-purple-bg);
+    }
+
+    /* Right: Cash Memo Badge & Meta */
+    .memo-badge-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      width: 255px;
+    }
+
+    .cash-memo-pill {
+      background: var(--primary-gradient);
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 800;
+      padding: 6px 30px 6px 42px;
+      border-radius: 50px 0 0 50px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(92, 27, 130, 0.25);
+      margin-right: -38px;
+      user-select: none;
+    }
+
+    .invoice-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      width: 100%;
+    }
+
+    .invoice-no-badge {
+      background: var(--badge-subtle);
+      color: #111;
+      font-weight: 800;
+      padding: 3px 12px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .invoice-no-badge input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 800;
+      width: 80px;
+      color: #000;
+      text-align: center;
+    }
+
+    .invoice-date-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      width: 100%;
+    }
+
+    .invoice-extra-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      width: 100%;
+      margin-top: 2px;
+    }
+
+    .extra-label-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: right;
+      width: 105px;
+      padding: 1px 3px;
+      border-radius: 4px;
+    }
+    .extra-label-input:focus {
+      background: var(--light-purple-bg);
+    }
+
+    .extra-val-input {
+      width: 135px;
+      font-size: 0.92rem;
+    }
+
+    .date-input-line {
+      border: none;
+      border-bottom: 1.5px solid #222;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      width: 135px;
+      background: transparent;
+      padding: 2px 4px;
+      color: #111;
+    }
+
+    /* Customer Information Box */
+    .customer-card {
+      border: 1.5px solid var(--light-border);
+      border-radius: 14px;
+      position: relative;
+      padding: 16px 20px 14px 20px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      background: #ffffff;
+    }
+
+    .customer-badge {
+      position: absolute;
+      top: -14px;
+      left: 18px;
+      background: var(--primary-gradient);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 4px 18px;
+      border-radius: 8px 14px 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 2px 6px rgba(92, 27, 130, 0.2);
+    }
+
+    .customer-fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 28px;
+      row-gap: 12px;
+    }
+
+    .field-group {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .field-group.full-width {
+      grid-column: span 2;
+    }
+
+    .field-label {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: #111;
+      white-space: nowrap;
+    }
+
+    .underline-input {
+      width: 100%;
+      border: none;
+      border-bottom: 1.5px solid #222;
+      background: transparent;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.96rem;
+      color: #111;
+      padding: 1px 4px;
+    }
+    .underline-input:focus {
+      border-bottom-color: var(--primary-purple);
+      background: var(--light-purple-bg);
+    }
+
+    /* Product Table */
+    .table-container {
+      margin-bottom: 18px;
+    }
+
+    .memo-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1.5px solid var(--light-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .memo-table th {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 9px 10px;
+      text-align: center;
+      border-right: 1.5px solid rgba(255, 255, 255, 0.35);
+      letter-spacing: 0.3px;
+    }
+    .memo-table th:last-child {
+      border-right: none;
+    }
+
+    .taka-symbol {
+      font-family: 'Noto Sans Bengali', 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.98em;
+      display: inline-block;
+      margin-left: 1px;
+    }
+
+    .memo-table td {
+      border-right: 1.5px solid var(--light-border);
+      border-bottom: 1.5px solid var(--light-border);
+      padding: 5px 8px;
+      vertical-align: middle;
+      font-size: 0.92rem;
+      height: 38px;
+    }
+
+    .memo-table td:last-child {
+      border-right: none;
+    }
+
+    .memo-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .memo-table td.sl-col {
+      text-align: center;
+      font-weight: 700;
+      color: #222;
+      width: 48px;
+    }
+
+    .memo-table td.qty-col {
+      text-align: center;
+      width: 72px;
+    }
+
+    .memo-table td.price-col {
+      text-align: right;
+      width: 130px;
+    }
+
+    .memo-table td.total-col {
+      text-align: right;
+      width: 140px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .table-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.92rem;
+      background: transparent;
+      padding: 3px 5px;
+    }
+    .table-input.text-center {
+      text-align: center;
+    }
+    .table-input.text-right {
+      text-align: right;
+    }
+    .table-input:focus {
+      background: #fbf7ff;
+      border-radius: 4px;
+    }
+
+    .row-actions-td {
+      width: 30px;
+      text-align: center;
+      padding: 0 !important;
+      border: none !important;
+    }
+
+    .btn-del-row {
+      color: #e53935;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      opacity: 0.55;
+      transition: opacity 0.2s;
+      padding: 4px;
+    }
+    .btn-del-row:hover {
+      opacity: 1;
+    }
+
+    .table-controls {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 6px;
+      gap: 10px;
+    }
+
+    .btn-sm {
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      border-radius: 6px;
+    }
+
+    /* Bottom Grid: Note on left, Calculations on right */
+    .memo-bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 310px;
+      gap: 22px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+
+    /* Note Box */
+    .note-card {
+      border: 1.5px solid var(--light-border);
+      border-radius: 14px;
+      position: relative;
+      padding: 22px 18px 14px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      min-height: 165px;
+      background: #ffffff;
+    }
+
+    .note-badge {
+      position: absolute;
+      top: -13px;
+      left: 14px;
+      background: var(--primary-gradient);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 3px 18px;
+      border-radius: 8px 14px 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(92, 27, 130, 0.2);
+    }
+
+    .note-line {
+      border-bottom: 1.5px dotted #777;
+      width: 100%;
+      height: 28px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .note-line input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0 4px;
+      color: #222;
+    }
+
+    /* Calculations Table */
+    .calc-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1.5px solid var(--light-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .calc-table tr td {
+      border-bottom: 1.5px solid var(--light-border);
+      padding: 6px 12px;
+      font-size: 0.94rem;
+    }
+    .calc-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .calc-table td.label-cell {
+      font-weight: 700;
+      color: #1a1a1a;
+      width: 58%;
+      border-right: 1.5px solid var(--light-border);
+      background: #fdfcff;
+    }
+
+    .calc-table td.val-cell {
+      width: 42%;
+      text-align: right;
+      font-weight: 600;
+      background: #fbf9fd;
+    }
+
+    .calc-table tr.highlight-purple td {
+      background: var(--primary-gradient) !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      font-size: 0.98rem;
+    }
+
+    .calc-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: right;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      color: inherit;
+      padding: 1px 3px;
+    }
+
+    /* Payment Method Strip */
+    .payment-method-card {
+      border: 1.5px solid var(--light-border);
+      border-radius: 12px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      background: #ffffff;
+      flex-wrap: wrap;
+    }
+
+    .payment-badge {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 5px 16px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .payment-options {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary-purple);
+      cursor: pointer;
+    }
+
+    /* Footer: Thank You & Signature */
+    .memo-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 28px;
+      padding-bottom: 30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .thank-you-text {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3.8rem;
+      color: var(--primary-purple);
+      line-height: 1;
+      transform: rotate(-4deg);
+      margin-left: 20px;
+      text-shadow: 1px 1px 2px rgba(92, 27, 130, 0.12);
+    }
+
+    /* Exact Signature Box */
+    .signature-box {
+      text-align: center;
+      width: 270px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .signature-img-wrapper {
+      width: 100%;
+      height: 55px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      margin-bottom: 2px;
+    }
+
+    #memoSignatureImg {
+      max-width: 170px;
+      max-height: 52px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+      transition: transform 0.15s ease;
+    }
+
+    .signature-img-wrapper:hover #memoSignatureImg {
+      transform: scale(1.04);
+    }
+
+    .sig-change-hint {
+      position: absolute;
+      top: -12px;
+      background: rgba(92, 27, 130, 0.95);
+      color: white;
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .signature-img-wrapper:hover .sig-change-hint {
+      opacity: 1;
+    }
+
+    .signature-line {
+      border-bottom: 1.5px solid #222;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+
+    .signature-title {
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    #sigFileInput {
+      display: none;
+    }
+
+    /* Bottom Decorative Curve */
+    .bottom-wave-decorator {
+      position: relative;
+      margin-left: -38px;
+      margin-right: -38px;
+      height: 56px;
+      overflow: hidden;
+      line-height: 0;
+      margin-top: -15px;
+    }
+
+    .bottom-wave-decorator svg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #logoFileInput {
+      display: none;
+    }
+
+    /* Mobile Responsive (Only applies to Screen, NEVER Print) */
+    @media screen and (max-width: 768px) {
+      .app-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 12px 14px;
+        gap: 10px;
+      }
+      .toolbar-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .memo-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .company-contact {
+        align-items: center;
+        max-width: 100%;
+      }
+      .memo-badge-section {
+        align-items: center;
+      }
+      .cash-memo-pill {
+        border-radius: 50px;
+        margin-right: 0;
+        font-size: 1.3rem;
+        padding: 6px 22px;
+      }
+      .memo-bottom-grid {
+        grid-template-columns: 1fr;
+      }
+      .customer-fields-grid {
+        grid-template-columns: 1fr;
+      }
+      .field-group.full-width {
+        grid-column: span 1;
+      }
+      .memo-container {
+        padding: 20px 14px 0 14px;
+      }
+      .bottom-wave-decorator {
+        margin-left: -14px;
+        margin-right: -14px;
+      }
+      .thank-you-text {
+        font-size: 2.6rem;
+      }
+      .memo-footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+    }
+
+    /* Print Optimization: Guaranteed Single Page (A4 Portrait) */
+    @media print {
+      html, body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        width: 100% !important;
+      }
+
+      .app-header,
+      .font-selector-wrap,
+      .helper-tip,
+      .table-controls,
+      .row-actions-td,
+      .btn-del-row,
+      .logo-change-hint,
+      .sig-change-hint {
+        display: none !important;
+      }
+
+      .memo-container {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 284mm !important;
+        height: 284mm !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding: 16px 28px 0 28px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        position: relative !important;
+      }
+
+      /* Desktop 3-column Header strictly preserved in Print */
+      .memo-header {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        margin-bottom: 6px !important;
+      }
+
+      .brand-section {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 190px !important;
+        text-align: center !important;
+      }
+
+      .logo-wrapper img {
+        width: 160px !important;
+        max-height: 82px !important;
+      }
+
+      .company-contact {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        max-width: 260px !important;
+        text-align: left !important;
+        gap: 3px !important;
+        font-size: 0.82rem !important;
+        margin-top: 2px !important;
+      }
+
+      .memo-badge-section {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        width: 240px !important;
+        gap: 8px !important;
+      }
+
+      .cash-memo-pill {
+        border-radius: 50px 0 0 50px !important;
+        margin-right: -28px !important;
+        padding: 6px 32px 6px 42px !important;
+        font-size: 1.5rem !important;
+      }
+
+      .invoice-meta-row {
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+      }
+
+      .invoice-date-row {
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+      }
+
+      /* Customer Info Box */
+      .customer-card {
+        padding: 12px 20px 12px 20px !important;
+        margin-top: 4px !important;
+        margin-bottom: 6px !important;
+        border-radius: 12px !important;
+      }
+
+      .customer-fields-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        column-gap: 24px !important;
+        row-gap: 10px !important;
+      }
+
+      .field-group.full-width {
+        grid-column: span 2 !important;
+      }
+
+      /* Product Table - Expanded row height to fill page elegantly */
+      .table-container {
+        margin-bottom: 6px !important;
+      }
+
+      .memo-table {
+        border-radius: 10px !important;
+      }
+
+      .memo-table th {
+        padding: 8px 10px !important;
+        font-size: 0.92rem !important;
+      }
+
+      .memo-table td {
+        height: 44px !important;
+        padding: 4px 8px !important;
+        font-size: 0.92rem !important;
+      }
+
+      /* Bottom 2-column Grid strictly preserved in Print */
+      .memo-bottom-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 290px !important;
+        gap: 16px !important;
+        margin-bottom: 6px !important;
+      }
+
+      .note-card {
+        min-height: 155px !important;
+        padding: 18px 16px 10px 16px !important;
+        border-radius: 12px !important;
+      }
+
+      .note-line {
+        height: 30px !important;
+      }
+
+      .calc-table tr td {
+        padding: 6px 12px !important;
+        font-size: 0.92rem !important;
+      }
+
+      .calc-table tr.highlight-purple td {
+        font-size: 0.96rem !important;
+        padding: 8px 12px !important;
+      }
+
+      /* Payment Method */
+      .payment-method-card {
+        margin-bottom: 6px !important;
+        padding: 8px 14px !important;
+        border-radius: 10px !important;
+      }
+
+      .payment-badge {
+        padding: 5px 14px !important;
+        font-size: 0.88rem !important;
+      }
+
+      /* Footer */
+      .memo-footer {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-end !important;
+        margin-top: 4px !important;
+        padding-bottom: 6px !important;
+      }
+
+      .thank-you-text {
+        font-size: 3.5rem !important;
+        line-height: 1 !important;
+      }
+
+      .signature-box {
+        width: 230px !important;
+      }
+
+      .signature-img-wrapper {
+        height: 52px !important;
+      }
+
+      #memoSignatureImg {
+        max-width: 160px !important;
+        max-height: 50px !important;
+        transform: none !important;
+      }
+
+      .bottom-wave-decorator {
+        margin-left: -28px !important;
+        margin-right: -28px !important;
+        height: 48px !important;
+        margin-top: 0 !important;
+      }
+
+      /* Clean inputs for print: remove all input borders/outlines/shadows */
+      input, textarea {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+
+      input::placeholder {
+        color: transparent !important;
+      }
+
+      .underline-input {
+        border-bottom: 1.5px solid #222 !important;
+      }
+
+      .date-input-line {
+        border-bottom: 1.5px solid #222 !important;
+      }
+
+      /* Force background colors and gradients in all browsers */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 5mm 6mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Bar -->
+  <header class="app-header">
+    <div class="brand-app-title">
+      <i class="fa-solid fa-file-invoice-dollar"></i>
+      <span>Cash Memo</span>
+    </div>
+    <div class="toolbar-actions">
+      <!-- Save as PDF -->
+      <button type="button" class="btn btn-pdf" onclick="saveAsPdf()" title="Download Cash Memo as PDF file">
+        <i class="fa-solid fa-file-pdf"></i> Save PDF
+      </button>
+
+      <!-- Save as Image (PNG) -->
+      <button type="button" class="btn btn-image" onclick="saveAsImage()" title="Download Cash Memo as PNG Image">
+        <i class="fa-solid fa-image"></i> Save Image
+      </button>
+
+      <!-- New Memo -->
+      <button type="button" class="btn btn-outline" onclick="resetForm()" title="Clear form for a new memo">
+        <i class="fa-solid fa-arrows-rotate"></i> New Memo
+      </button>
+
+      <!-- Direct Print -->
+      <button type="button" class="btn btn-primary" onclick="printMemo()" title="Print memo or save via print dialog">
+        <i class="fa-solid fa-print"></i> Print Memo
+      </button>
+
+      <!-- Visit Page / Invoices & App Dashboard -->
+      <a href="invoices.html" class="btn btn-visit" id="visitBtn" title="Open Invoice List, Search & Install App">
+        <i class="fa-solid fa-layer-group"></i> Invoices & App
+      </a>
+    </div>
+  </header>
+
+  <!-- Cash Memo Paper Sheet -->
+  <main class="memo-container" id="printableMemo">
+
+    <!-- Header Section -->
+    <div class="memo-header">
+      <!-- Left: Logo -->
+      <div class="brand-section">
+        <label for="logoFileInput" class="logo-wrapper" title="Click to change logo">
+          <img id="memoLogo" src="static/Islamic Art Prints Logo.png" alt="Islamic Art Prints Logo" onerror="this.onerror=null; this.src='https://placehold.co/180x80/5c1b82/ffffff?text=Islamic+Art+Prints'">
+          <span class="logo-change-hint"><i class="fa-solid fa-camera"></i> Change Logo</span>
+        </label>
+        <input type="file" id="logoFileInput" accept="image/*" onchange="loadNewLogo(event)">
+      </div>
+
+      <!-- Middle: Contact Details (Updated with your exact details) -->
+      <div class="company-contact">
+        <div class="contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <input type="text" value="+880 1750-602928" spellcheck="false" title="Phone Number">
+        </div>
+        <div class="contact-item">
+          <i class="fa-brands fa-whatsapp"></i>
+          <input type="text" value="+880 1750-602928" spellcheck="false" title="WhatsApp Number">
+        </div>
+        <div class="contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="text" value="islamicartprintsbd@gmail.com" spellcheck="false" title="Email Address">
+        </div>
+        <div class="contact-item address-2line">
+          <i class="fa-solid fa-location-dot"></i>
+          <div class="address-text-lines">
+            <input type="text" value="193 Lohar Building (Lift 4, Room 508)," spellcheck="false" title="Address Line 1">
+            <input type="text" value="Fakirapool, Motijheel, Dhaka-1000" spellcheck="false" title="Address Line 2">
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Cash Memo Badge, Invoice #, Date -->
+      <div class="memo-badge-section">
+        <div class="cash-memo-pill">Cash Memo</div>
+        <div class="invoice-meta-row">
+          <span>Invoice No:</span>
+          <div class="invoice-no-badge">
+            <input type="text" id="invoiceNumber" value="#0001" spellcheck="false" title="Invoice Number">
+          </div>
+        </div>
+        <div class="invoice-date-row">
+          <span>Date:</span>
+          <input type="text" id="invoiceDate" class="date-input-line" spellcheck="false" title="Date">
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Information Box -->
+    <section class="customer-card">
+      <div class="customer-badge">
+        <i class="fa-regular fa-user"></i> Customer Information
+      </div>
+      <div class="customer-fields-grid">
+        <div class="field-group">
+          <span class="field-label">Name:</span>
+          <input type="text" id="custName" class="underline-input" placeholder="Enter customer name..." spellcheck="false">
+        </div>
+        <div class="field-group">
+          <span class="field-label">Phone:</span>
+          <input type="text" id="custPhone" class="underline-input" placeholder="Phone number (e.g. 017...)" spellcheck="false">
+        </div>
+        <div class="field-group full-width">
+          <span class="field-label">Address:</span>
+          <input type="text" id="custAddress" class="underline-input" placeholder="Full delivery address..." spellcheck="false">
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Details Table -->
+    <section class="table-container">
+      <table class="memo-table">
+        <thead>
+          <tr>
+            <th style="width: 48px;">SL</th>
+            <th>Product Details</th>
+            <th style="width: 72px;">Qty</th>
+            <th style="width: 130px;">Unit Price (<span class="taka-symbol">৳</span>)</th>
+            <th style="width: 140px;">Total (<span class="taka-symbol">৳</span>)</th>
+            <th class="row-actions-td"></th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody">
+          <!-- 5 rows generated dynamically -->
+        </tbody>
+      </table>
+      <div class="table-controls">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addRow()">
+          <i class="fa-solid fa-plus"></i> Add Another Item / Row
+        </button>
+      </div>
+    </section>
+
+    <!-- Bottom Section: Note on Left, Calculations on Right -->
+    <div class="memo-bottom-grid">
+      <!-- Note Box with Dotted Lines -->
+      <div class="note-card">
+        <div class="note-badge">
+          <i class="fa-solid fa-pen-nib"></i> Note
+        </div>
+        <div class="note-line">
+          <input type="text" placeholder="Custom size, frame or special request..." spellcheck="false">
+        </div>
+        <div class="note-line">
+          <input type="text" placeholder="Delivery instructions or remarks..." spellcheck="false">
+        </div>
+        <div class="note-line">
+          <input type="text" placeholder="" spellcheck="false">
+        </div>
+      </div>
+
+      <!-- Calculations Box -->
+      <div class="calc-card">
+        <table class="calc-table">
+          <tbody>
+            <tr>
+              <td class="label-cell">Subtotal</td>
+              <td class="val-cell">
+                <input type="text" id="subtotalVal" class="calc-input" value="0.00" readonly>
+              </td>
+            </tr>
+            <tr>
+              <td class="label-cell">Delivery Charge</td>
+              <td class="val-cell">
+                <input type="number" id="deliveryCharge" class="calc-input" value="0" min="0" oninput="calculateTotal()">
+              </td>
+            </tr>
+            <tr class="highlight-purple">
+              <td class="label-cell">Total Amount</td>
+              <td class="val-cell">
+                <input type="text" id="totalAmount" class="calc-input" value="0.00" readonly>
+              </td>
+            </tr>
+            <tr>
+              <td class="label-cell">Paid Amount</td>
+              <td class="val-cell">
+                <input type="number" id="paidAmount" class="calc-input" value="0" min="0" oninput="calculateTotal()">
+              </td>
+            </tr>
+            <tr class="highlight-purple">
+              <td class="label-cell">Due Amount</td>
+              <td class="val-cell">
+                <input type="text" id="dueAmount" class="calc-input" value="0.00" readonly>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payment Method Selection Bar -->
+    <div class="payment-method-card">
+      <div class="payment-badge">Payment Method:</div>
+      <div class="payment-options">
+        <label class="checkbox-label">
+          <input type="checkbox" name="payMethod" value="Cash"> Cash
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" name="payMethod" value="bKash"> bKash
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" name="payMethod" value="Nagad"> Nagad
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" name="payMethod" value="Bank"> Bank
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" name="payMethod" value="Other"> Other
+        </label>
+      </div>
+    </div>
+
+    <!-- Footer: Thank You Script & EXACT Signature -->
+    <div class="memo-footer">
+      <div class="thank-you-text">Thank You!</div>
+      
+      <div class="signature-box">
+        <label for="sigFileInput" class="signature-img-wrapper" title="Click to upload a new signature if needed">
+          <!-- Your Exact Signature Image -->
+          <img id="memoSignatureImg" src="static/signature.png" alt="Authorized Signature" onerror="this.src='static/signature.png'">
+          <span class="sig-change-hint"><i class="fa-solid fa-camera"></i> Change Signature</span>
+        </label>
+        <input type="file" id="sigFileInput" accept="image/*" onchange="loadNewSignature(event)">
+        <div class="signature-line"></div>
+        <div class="signature-title">Authorized Signature</div>
+      </div>
+    </div>
+
+    <!-- Bottom Wave Curved Graphic (Exact color & curvature) -->
+    <div class="bottom-wave-decorator">
+      <svg viewBox="0 0 800 65" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 65V35C150 10 320 50 490 28C620 10 720 30 800 15V65H0Z" fill="#7527a4" fill-opacity="0.55"/>
+        <path d="M0 65V42C120 20 280 58 450 32C600 10 710 40 800 20V65H0Z" fill="#591980"/>
+      </svg>
+    </div>
+
+  </main>
+
+  <script>
+    // Set Current Date
+    function setDefaultDate() {
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      document.getElementById('invoiceDate').value = `${dd}/${mm}/${yyyy}`;
+    }
+
+    let rowCount = 0;
+
+    // Create a row element
+    function createRow(sl, item = '', qty = '', price = '') {
+      const tr = document.createElement('tr');
+      tr.id = `row-${sl}`;
+      const total = (qty && price) ? (parseFloat(qty) * parseFloat(price)).toFixed(2) : '';
+      tr.innerHTML = `
+        <td class="sl-col">${sl}</td>
+        <td>
+          <input type="text" class="table-input row-desc" placeholder="Item name, size or description..." value="${item}">
+        </td>
+        <td class="qty-col">
+          <input type="number" class="table-input text-center row-qty" min="0" placeholder="" value="${qty}" oninput="calcRowTotal(this)">
+        </td>
+        <td class="price-col">
+          <input type="number" class="table-input text-right row-price" min="0" placeholder="" value="${price}" oninput="calcRowTotal(this)">
+        </td>
+        <td class="total-col">
+          <input type="text" class="table-input text-right row-total" placeholder="" value="${total}" readonly>
+        </td>
+        <td class="row-actions-td">
+          <button type="button" class="btn-del-row" title="Delete Row" onclick="deleteRow(this)">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </td>
+      `;
+      return tr;
+    }
+
+    // Initialize 5 rows
+    function initTable() {
+      const tbody = document.getElementById('productTableBody');
+      tbody.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        tbody.appendChild(createRow(i));
+      }
+      rowCount = 5;
+    }
+
+    // Add extra row
+    function addRow(item = '', qty = '', price = '') {
+      rowCount++;
+      const tbody = document.getElementById('productTableBody');
+      tbody.appendChild(createRow(rowCount, item, qty, price));
+      reIndexRows();
+    }
+
+    // Delete row
+    function deleteRow(btn) {
+      const tbody = document.getElementById('productTableBody');
+      if (tbody.children.length <= 1) {
+        alert('You must keep at least one row!');
+        return;
+      }
+      const tr = btn.closest('tr');
+      tr.remove();
+      reIndexRows();
+      calculateTotal();
+    }
+
+    // Re-index SL numbers
+    function reIndexRows() {
+      const rows = document.querySelectorAll('#productTableBody tr');
+      rows.forEach((row, idx) => {
+        row.querySelector('.sl-col').textContent = idx + 1;
+      });
+      rowCount = rows.length;
+    }
+
+    // Calculate Row Total
+    function calcRowTotal(input) {
+      const row = input.closest('tr');
+      const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
+      const price = parseFloat(row.querySelector('.row-price').value) || 0;
+      const total = qty * price;
+      row.querySelector('.row-total').value = (qty > 0 && price > 0) ? total.toFixed(2) : '';
+      calculateTotal();
+    }
+
+    // Calculate Entire Invoice Totals
+    function calculateTotal() {
+      let subtotal = 0;
+      const rowTotals = document.querySelectorAll('.row-total');
+      rowTotals.forEach(rt => {
+        const val = parseFloat(rt.value) || 0;
+        subtotal += val;
+      });
+
+      document.getElementById('subtotalVal').value = subtotal > 0 ? subtotal.toFixed(2) : '0.00';
+
+      const delivery = parseFloat(document.getElementById('deliveryCharge').value) || 0;
+      const totalAmount = subtotal + delivery;
+      document.getElementById('totalAmount').value = totalAmount > 0 ? totalAmount.toFixed(2) : '0.00';
+
+      const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
+      const due = Math.max(0, totalAmount - paid);
+      document.getElementById('dueAmount').value = due > 0 ? due.toFixed(2) : '0.00';
+    }
+
+    // Custom Logo File Loader
+    function loadNewLogo(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('memoLogo').src = e.target.result;
+          try {
+            localStorage.setItem('memo_saved_logo', e.target.result);
+          } catch(err){}
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Custom Signature Loader with Automatic Background Removal AND Auto-Crop
+    function loadNewSignature(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const d = imgData.data;
+
+            let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+            let hasInk = false;
+
+            for (let y = 0; y < canvas.height; y++) {
+              for (let x = 0; x < canvas.width; x++) {
+                const idx = (y * canvas.width + x) * 4;
+                const r = d[idx];
+                const g = d[idx+1];
+                const b = d[idx+2];
+                const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+
+                if (brightness > 200) {
+                  d[idx+3] = 0; // Transparent
+                } else {
+                  d[idx] = Math.max(0, r - 35);
+                  d[idx+1] = Math.max(0, g - 35);
+                  d[idx+2] = Math.max(0, b - 35);
+                  if (brightness > 140) {
+                    d[idx+3] = Math.round(((200 - brightness) / 60) * 255);
+                  }
+
+                  hasInk = true;
+                  if (x < minX) minX = x;
+                  if (x > maxX) maxX = x;
+                  if (y < minY) minY = y;
+                  if (y > maxY) maxY = y;
+                }
+              }
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            const sigImg = document.getElementById('memoSignatureImg');
+            let finalDataUrl = '';
+            if (hasInk && maxX > minX && maxY > minY) {
+              const pad = 10;
+              const cropX = Math.max(0, minX - pad);
+              const cropY = Math.max(0, minY - pad);
+              const cropW = Math.min(canvas.width - cropX, (maxX - minX) + pad * 2);
+              const cropH = Math.min(canvas.height - cropY, (maxY - minY) + pad * 2);
+
+              const cropCanvas = document.createElement('canvas');
+              cropCanvas.width = cropW;
+              cropCanvas.height = cropH;
+              const cropCtx = cropCanvas.getContext('2d');
+              cropCtx.drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+              finalDataUrl = cropCanvas.toDataURL('image/png');
+            } else {
+              finalDataUrl = canvas.toDataURL('image/png');
+            }
+
+            sigImg.src = finalDataUrl;
+
+            try {
+              localStorage.setItem('memo_saved_signature', finalDataUrl);
+            } catch(err){}
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Demo Data
+    function fillSampleData() {
+      document.getElementById('custName').value = 'Tanvir Ahmed';
+      document.getElementById('custPhone').value = '01812-345678';
+      document.getElementById('custAddress').value = 'House 14, Road 5, Dhanmondi, Dhaka';
+
+      const tbody = document.getElementById('productTableBody');
+      tbody.innerHTML = '';
+      tbody.appendChild(createRow(1, 'Ayat al-Kursi Acrylic Wall Art (18x24 inch)', 1, 1850));
+      tbody.appendChild(createRow(2, 'Surah Ikhlas Wooden Calligraphy Frame', 2, 750));
+      tbody.appendChild(createRow(3, 'Bismillah Tabletop Canvas Stand', 1, 450));
+      tbody.appendChild(createRow(4, '', '', ''));
+      tbody.appendChild(createRow(5, '', '', ''));
+      rowCount = 5;
+
+      document.getElementById('deliveryCharge').value = 120;
+      document.getElementById('paidAmount').value = 1500;
+
+      // Check bKash
+      document.querySelectorAll('.payment-options input[type="checkbox"]').forEach(cb => {
+        cb.checked = (cb.value === 'bKash');
+      });
+
+      // Notes
+      const noteInputs = document.querySelectorAll('.note-line input');
+      if (noteInputs[0]) noteInputs[0].value = 'Golden finish acrylic mirror border';
+      if (noteInputs[1]) noteInputs[1].value = 'Call customer before delivery';
+
+      calculateTotal();
+    }
+
+    // Reset Form
+    function resetForm() {
+      if (confirm('Are you sure you want to start a new memo? Current entries will be cleared.')) {
+        document.getElementById('custName').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('custAddress').value = '';
+        document.getElementById('deliveryCharge').value = '0';
+        document.getElementById('paidAmount').value = '0';
+        document.querySelectorAll('.payment-options input[type="checkbox"]').forEach(cb => cb.checked = false);
+        
+        document.querySelectorAll('.note-line input').forEach(input => input.value = '');
+
+        // Auto increment invoice number
+        const currentInv = document.getElementById('invoiceNumber').value;
+        const match = currentInv.match(/#?(\d+)/);
+        if (match) {
+          const nextNum = parseInt(match[1]) + 1;
+          document.getElementById('invoiceNumber').value = '#' + String(nextNum).padStart(4, '0');
+        }
+        
+        setDefaultDate();
+        initTable();
+        calculateTotal();
+      }
+    }
+
+    // Save Invoice to Database
+    function saveCurrentInvoiceToDatabase() {
+      const invNum = document.getElementById('invoiceNumber').value.trim() || '#0001';
+      const invDate = document.getElementById('invoiceDate').value.trim();
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const address = document.getElementById('custAddress').value.trim();
+      const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+      const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
+      const due = parseFloat(document.getElementById('dueAmount').value) || 0;
+
+      const items = [];
+      document.querySelectorAll('#productTableBody tr').forEach(row => {
+        const desc = row.querySelector('.row-desc') ? row.querySelector('.row-desc').value.trim() : '';
+        const qty = row.querySelector('.row-qty') ? row.querySelector('.row-qty').value.trim() : '';
+        const price = row.querySelector('.row-price') ? row.querySelector('.row-price').value.trim() : '';
+        if (desc || qty || price) {
+          items.push({ desc, qty, price });
+        }
+      });
+
+      if (!name && total === 0 && items.length === 0) return;
+
+      const record = {
+        id: 'inv_' + Date.now(),
+        number: invNum,
+        date: invDate,
+        name: name,
+        phone: phone,
+        address: address,
+        total: total,
+        paid: paid,
+        due: due,
+        items: items,
+        status: (due <= 0) ? 'paid' : (paid > 0 ? 'due' : 'unpaid')
+      };
+
+      try {
+        const raw = localStorage.getItem('memo_invoices_database');
+        let list = raw ? JSON.parse(raw) : [];
+        const existingIdx = list.findIndex(item => item.number === invNum);
+        if (existingIdx >= 0) {
+          list[existingIdx] = record;
+        } else {
+          list.unshift(record);
+        }
+        localStorage.setItem('memo_invoices_database', JSON.stringify(list));
+      } catch(e) {}
+    }
+
+    // Save as PDF (Direct Download)
+    async function saveAsPdf() {
+      saveCurrentInvoiceToDatabase();
+      const memo = document.getElementById('printableMemo');
+      const invNum = (document.getElementById('invoiceNumber').value || 'memo').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `CashMemo_${invNum}.pdf`;
+
+      const btn = event ? event.currentTarget : null;
+      let originalHtml = '';
+      if (btn) {
+        originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving PDF...';
+        btn.disabled = true;
+      }
+
+      // Ensure embedded Base64 images are used so canvas is 100% clean/untainted on file://
+      if (typeof DEFAULT_LOGO_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_logo')) {
+        document.getElementById('memoLogo').src = DEFAULT_LOGO_BASE64;
+      }
+      if (typeof DEFAULT_SIG_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_signature')) {
+        document.getElementById('memoSignatureImg').src = DEFAULT_SIG_BASE64;
+      }
+
+      const opt = {
+        margin: [4, 6, 4, 6],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          scrollY: 0
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      try {
+        if (typeof html2pdf !== 'undefined') {
+          await html2pdf().set(opt).from(memo).save();
+        } else {
+          window.print();
+        }
+      } catch (e) {
+        console.error('PDF Export Error:', e);
+        window.print();
+      } finally {
+        if (btn) {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+        }
+      }
+    }
+
+    // Save as High Resolution Image (Direct Download PNG)
+    async function saveAsImage() {
+      saveCurrentInvoiceToDatabase();
+      const memo = document.getElementById('printableMemo');
+      const invNum = (document.getElementById('invoiceNumber').value || 'memo').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `CashMemo_${invNum}.png`;
+
+      const btn = event ? event.currentTarget : null;
+      let originalHtml = '';
+      if (btn) {
+        originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving Image...';
+        btn.disabled = true;
+      }
+
+      // Ensure embedded Base64 images are used so canvas is 100% clean/untainted on file://
+      if (typeof DEFAULT_LOGO_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_logo')) {
+        document.getElementById('memoLogo').src = DEFAULT_LOGO_BASE64;
+      }
+      if (typeof DEFAULT_SIG_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_signature')) {
+        document.getElementById('memoSignatureImg').src = DEFAULT_SIG_BASE64;
+      }
+
+      try {
+        if (typeof html2canvas !== 'undefined') {
+          const canvas = await html2canvas(memo, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            scrollY: 0
+          });
+
+          // Convert to blob and trigger direct download
+          if (canvas.toBlob) {
+            canvas.toBlob(function(blob) {
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.download = fileName;
+              link.href = url;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              setTimeout(() => URL.revokeObjectURL(url), 1500);
+            }, 'image/png');
+          } else {
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        } else {
+          alert('Image exporter is loading, please try again in a few seconds.');
+        }
+      } catch (e) {
+        console.error('Image Export Error:', e);
+        alert('Could not export image directly: ' + e.message);
+      } finally {
+        if (btn) {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+        }
+      }
+    }
+
+    // Direct Print
+    function printMemo() {
+      saveCurrentInvoiceToDatabase();
+      window.print();
+    }
+
+    // On Load
+    window.onload = function() {
+      setDefaultDate();
+      initTable();
+
+      // Permanent clean font styling (Outfit)
+      document.getElementById('printableMemo').style.fontFamily = "'Outfit', 'Plus Jakarta Sans', 'Inter', 'Noto Sans Bengali', sans-serif";
+
+      // Load Base64 embedded assets immediately to ensure canvas is never tainted on file://
+      try {
+        const savedSig = localStorage.getItem('memo_saved_signature');
+        if (savedSig) {
+          document.getElementById('memoSignatureImg').src = savedSig;
+        } else if (typeof DEFAULT_SIG_BASE64 !== 'undefined') {
+          document.getElementById('memoSignatureImg').src = DEFAULT_SIG_BASE64;
+        }
+
+        const savedLogo = localStorage.getItem('memo_saved_logo');
+        if (savedLogo) {
+          document.getElementById('memoLogo').src = savedLogo;
+        } else if (typeof DEFAULT_LOGO_BASE64 !== 'undefined') {
+          document.getElementById('memoLogo').src = DEFAULT_LOGO_BASE64;
+        }
+      } catch(err){}
+
+      // Check if URL has ?inv= parameter to load an existing invoice
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetInv = urlParams.get('inv');
+        if (targetInv) {
+          const raw = localStorage.getItem('memo_invoices_database');
+          if (raw) {
+            const list = JSON.parse(raw);
+            const found = list.find(item => item.number === targetInv);
+            if (found) {
+              document.getElementById('invoiceNumber').value = found.number || targetInv;
+              if (found.date) document.getElementById('invoiceDate').value = found.date;
+              if (found.name) document.getElementById('custName').value = found.name;
+              if (found.phone) document.getElementById('custPhone').value = found.phone;
+              if (found.address) document.getElementById('custAddress').value = found.address;
+              if (found.paid !== undefined) document.getElementById('paidAmount').value = found.paid;
+
+              if (found.items && found.items.length > 0) {
+                const tbody = document.getElementById('productTableBody');
+                tbody.innerHTML = '';
+                found.items.forEach((it, idx) => {
+                  tbody.appendChild(createRow(idx + 1, it.desc, it.qty, it.price));
+                });
+                let rCount = found.items.length;
+                while (rCount < 5) {
+                  rCount++;
+                  tbody.appendChild(createRow(rCount, '', '', ''));
+                }
+                rowCount = rCount;
+              }
+              calculateTotal();
+            }
+          }
+        }
+      } catch(e) {}
+    };
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
