@@ -2053,7 +2053,7 @@
       if (typeof DEFAULT_LOGO_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_logo')) {
         document.getElementById('memoLogo').src = DEFAULT_LOGO_BASE64;
       }
-      if (typeof DEFAULT_SIG_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_signature')) {
+      if (typeof DEFAULT_SIG_BASE64 !== 'undefined') {
         document.getElementById('memoSignatureImg').src = DEFAULT_SIG_BASE64;
       }
 
@@ -2109,7 +2109,7 @@
       if (typeof DEFAULT_LOGO_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_logo')) {
         document.getElementById('memoLogo').src = DEFAULT_LOGO_BASE64;
       }
-      if (typeof DEFAULT_SIG_BASE64 !== 'undefined' && !localStorage.getItem('memo_saved_signature')) {
+      if (typeof DEFAULT_SIG_BASE64 !== 'undefined') {
         document.getElementById('memoSignatureImg').src = DEFAULT_SIG_BASE64;
       }
 
@@ -2175,11 +2175,11 @@
 
       // Load Base64 embedded assets immediately to ensure canvas is never tainted on file://
       try {
-        const savedSig = localStorage.getItem('memo_saved_signature');
-        if (savedSig) {
-          document.getElementById('memoSignatureImg').src = savedSig;
-        } else if (typeof DEFAULT_SIG_BASE64 !== 'undefined') {
+        // Load latest signature from updated default asset
+        if (typeof DEFAULT_SIG_BASE64 !== 'undefined') {
           document.getElementById('memoSignatureImg').src = DEFAULT_SIG_BASE64;
+        } else {
+          document.getElementById('memoSignatureImg').src = 'static/signature.png?v=' + Date.now();
         }
 
         const savedLogo = localStorage.getItem('memo_saved_logo');
