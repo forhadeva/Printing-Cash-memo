@@ -1143,9 +1143,9 @@
               <strong style="cursor: pointer; color: #1f152b; display: inline-block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;" onclick="viewInvoiceDetails('${inv.number}')" title="${inv.name || 'Walk-in Customer'}">${inv.name || 'Walk-in Customer'}</strong>
             </td>
             <td><span style="display: inline-block; max-width: 110px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;">${inv.phone || 'N/A'}</span></td>
-            <td>৳${parseFloat(inv.total).toFixed(2)}</td>
-            <td>৳${parseFloat(inv.paid).toFixed(2)}</td>
-            <td style="color: ${dueColor}; font-weight: 700;">৳${parseFloat(inv.due).toFixed(2)}</td>
+            <td>৳${parseFloat(inv.total || 0).toFixed(2)}</td>
+            <td>৳${parseFloat(inv.paid || 0).toFixed(2)}</td>
+            <td style="color: ${dueColor}; font-weight: 700;">৳${parseFloat(inv.due || 0).toFixed(2)}</td>
             <td>
               <div class="status-combo-cell">
                 ${payBadge}

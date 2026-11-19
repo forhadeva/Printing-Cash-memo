@@ -1355,7 +1355,7 @@
     </div>
     <div class="toolbar-actions">
       <!-- Save to Database -->
-      <button type="button" class="btn btn-save" onclick="saveCurrentInvoiceToDatabase(true)" title="Save invoice details permanently to database">
+      <button type="button" class="btn btn-save" id="saveInvoiceBtn" onclick="saveCurrentInvoiceToDatabase(true)" title="Save invoice details permanently to database">
         <i class="fa-solid fa-floppy-disk"></i> Save Invoice
       </button>
 
@@ -1928,84 +1928,109 @@
 
     // Save Complete and Accurate Invoice Record to Database
     function saveCurrentInvoiceToDatabase(showToast = false) {
-      const invNum = (document.getElementById('invoiceNumber').value || '#0001').trim();
-      const invDate = (document.getElementById('invoiceDate').value || '').trim();
-      const name = (document.getElementById('custName').value || '').trim();
-      const phone = (document.getElementById('custPhone').value || '').trim();
-      const address = (document.getElementById('custAddress').value || '').trim();
-      
-      const subTotal = parseFloat(document.getElementById('subTotal').value) || 0;
-      const deliveryCharge = parseFloat(document.getElementById('deliveryCharge').value) || 0;
-      const total = parseFloat(document.getElementById('totalAmount').value) || 0;
-      const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
-      const due = parseFloat(document.getElementById('dueAmount').value) || 0;
+      try {
+        const invNum = (document.getElementById('invoiceNumber')?.value || '#0001').trim();
+        const invDate = (document.getElementById('invoiceDate')?.value || '').trim();
+        const name = (document.getElementById('custName')?.value || '').trim();
+        const phone = (document.getElementById('custPhone')?.value || '').trim();
+        const address = (document.getElementById('custAddress')?.value || '').trim();
+        
+        const subEl = document.getElementById('subtotalVal') || document.getElementById('subTotal');
+        const subTotal = subEl ? (parseFloat(subEl.value) || 0) : 0;
 
-      // Payment method
-      let paymentMethod = '';
-      const checkedPay = document.querySelector('.payment-options input[type="checkbox"]:checked');
-      if (checkedPay) {
-        paymentMethod = checkedPay.value;
-      }
+        const delEl = document.getElementById('deliveryCharge');
+        const deliveryCharge = delEl ? (parseFloat(delEl.value) || 0) : 0;
 
-      // Notes
-      const notes = [];
-      document.querySelectorAll('.note-line input').forEach(input => {
-        notes.push(input.value.trim());
-      });
+        const totEl = document.getElementById('totalAmount');
+        const total = totEl ? (parseFloat(totEl.value) || 0) : 0;
 
-      // Product rows
-      const items = [];
-      document.querySelectorAll('#productTableBody tr').forEach((row, idx) => {
-        const desc = row.querySelector('.row-desc') ? row.querySelector('.row-desc').value.trim() : '';
-        const qty = row.querySelector('.row-qty') ? row.querySelector('.row-qty').value.trim() : '';
-        const price = row.querySelector('.row-price') ? row.querySelector('.row-price').value.trim() : '';
-        const rowTotal = row.querySelector('.row-total') ? row.querySelector('.row-total').value.trim() : '';
-        if (desc || qty || price) {
-          items.push({ sl: idx + 1, desc, qty, price, total: rowTotal });
+        const paidEl = document.getElementById('paidAmount');
+        const paid = paidEl ? (parseFloat(paidEl.value) || 0) : 0;
+
+        const dueEl = document.getElementById('dueAmount');
+        const due = dueEl ? (parseFloat(dueEl.value) || 0) : 0;
+
+        // Payment method
+        let paymentMethod = '';
+        const checkedPay = document.querySelector('.payment-options input[type="checkbox"]:checked');
+        if (checkedPay) {
+          paymentMethod = checkedPay.value;
         }
-      });
 
-      if (!name && total === 0 && items.length === 0) {
-        if (showToast) showToastNotification('ইনভয়েস সেভ করতে কাস্টমার নাম বা পণ্যের তথ্য দিন।', 'warning');
-        return false;
-      }
+        // Notes
+        const notes = [];
+        document.querySelectorAll('.note-line input').forEach(input => {
+          notes.push(input.value.trim());
+        });
 
-      const record = {
-        id: 'inv_' + Date.now(),
-        number: invNum,
-        date: invDate,
-        name: name,
-        phone: phone,
-        address: address,
-        items: items,
-        subtotal: subTotal,
-        deliveryCharge: deliveryCharge,
-        total: total,
-        paid: paid,
-        due: due,
-        paymentMethod: paymentMethod,
-        notes: notes,
-        status: (due <= 0) ? 'paid' : (paid > 0 ? 'due' : 'unpaid'),
-        updatedAt: new Date().toISOString()
-      };
+        // Product rows
+        const items = [];
+        document.querySelectorAll('#productTableBody tr').forEach((row, idx) => {
+          const desc = row.querySelector('.row-desc') ? row.querySelector('.row-desc').value.trim() : '';
+          const qty = row.querySelector('.row-qty') ? row.querySelector('.row-qty').value.trim() : '';
+          const price = row.querySelector('.row-price') ? row.querySelector('.row-price').value.trim() : '';
+          const rowTotal = row.querySelector('.row-total') ? row.querySelector('.row-total').value.trim() : '';
+          if (desc || qty || price) {
+            items.push({ sl: idx + 1, desc, qty, price, total: rowTotal });
+          }
+        });
 
-      if (window.DB && typeof window.DB.saveInvoice === 'function') {
-        window.DB.saveInvoice(record);
-      } else {
-        try {
+        if (!name && total === 0 && items.length === 0) {
+          if (showToast) showToastNotification('ইনভয়েস সেভ করতে কাস্টমার নাম বা পণ্যের তথ্য দিন।', 'warning');
+          return false;
+        }
+
+        const record = {
+          id: 'inv_' + Date.now(),
+          number: invNum,
+          date: invDate,
+          name: name,
+          phone: phone,
+          address: address,
+          items: items,
+          subtotal: subTotal,
+          deliveryCharge: deliveryCharge,
+          total: total,
+          paid: paid,
+          due: due,
+          paymentMethod: paymentMethod,
+          notes: notes,
+          status: (due <= 0) ? 'paid' : (paid > 0 ? 'due' : 'unpaid'),
+          updatedAt: new Date().toISOString()
+        };
+
+        if (window.DB && typeof window.DB.saveInvoice === 'function') {
+          window.DB.saveInvoice(record);
+        } else {
           const raw = localStorage.getItem('memo_invoices_database');
           let list = raw ? JSON.parse(raw) : [];
           const existingIdx = list.findIndex(item => item.number === invNum);
           if (existingIdx >= 0) list[existingIdx] = record;
           else list.unshift(record);
           localStorage.setItem('memo_invoices_database', JSON.stringify(list));
-        } catch(e) {}
-      }
+        }
 
-      if (showToast) {
-        showToastNotification(`ইনভয়েস ${invNum} (${name || 'ক্যাশ মেমো'}) সফলভাবে ডাটাবেজে সংরক্ষণ করা হয়েছে!`, 'success');
+        // Animate Save Button
+        const saveBtn = document.getElementById('saveInvoiceBtn');
+        if (saveBtn) {
+          const originalContent = saveBtn.innerHTML;
+          saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+          saveBtn.style.background = '#10b981';
+          setTimeout(() => {
+            saveBtn.innerHTML = originalContent;
+            saveBtn.style.background = '';
+          }, 2000);
+        }
+
+        if (showToast) {
+          showToastNotification(`ইনভয়েস ${invNum} (${name || 'ক্যাশ মেমো'}) সফলভাবে সেভ হয়েছে!`, 'success');
+        }
+        return true;
+      } catch(err) {
+        console.error('Save Error:', err);
+        alert('Invoice Save Error: ' + err.message);
+        return false;
       }
-      return true;
     }
 
     // Save as PDF (Direct Download)
