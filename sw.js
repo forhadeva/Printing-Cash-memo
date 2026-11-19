@@ -1,10 +1,11 @@
 // Islamic Art Prints Service Worker for Offline & PWA App Installation
-const CACHE_NAME = 'islamic-art-prints-v2';
+const CACHE_NAME = 'islamic-art-prints-v3';
 const ASSETS = [
   './',
   './index.html',
   './invoices.html',
   './manifest.json',
+  './static/database.js',
   './static/icon-192.png',
   './static/icon-512.png',
   './static/logo_opt.png',

@@ -23,6 +23,9 @@
   <!-- Base64 Embedded Assets (Prevents Tainted Canvas CORS error on file://) -->
   <script src="static/images_data.js"></script>
 
+  <!-- Central Database & Cloud Sync Manager -->
+  <script src="static/database.js"></script>
+
   <!-- HTML2Canvas & HTML2PDF for Save as Image and Save as PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -134,6 +137,19 @@
 
     .btn:active {
       transform: scale(0.98);
+    }
+
+    .btn-save {
+      background: #059669;
+      color: #ffffff;
+      border: 1.5px solid #047857;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+    }
+    .btn-save:hover {
+      background: #047857;
+      color: #ffffff;
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.45);
+      transform: translateY(-1px);
     }
 
     .btn-pdf {
@@ -1017,8 +1033,71 @@
       }
     }
 
+    /* While exporting as Image or PDF, strictly hide action buttons & transparentize placeholders */
+    .is-exporting .app-header,
+    .is-exporting .font-selector-wrap,
+    .is-exporting .helper-tip,
+    .is-exporting .table-controls,
+    .is-exporting .row-actions-td,
+    .is-exporting .btn-del-row,
+    .is-exporting .logo-change-hint,
+    .is-exporting .sig-change-hint {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+    }
+
+    .is-exporting input::placeholder,
+    .is-exporting textarea::placeholder {
+      color: transparent !important;
+      opacity: 0 !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+
+    /* Toast Notification */
+    .toast-popup {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #059669;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 99999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    .toast-popup.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast-popup.warning {
+      background: #d97706;
+    }
+
     /* Print Optimization: Guaranteed Single Page (A4 Portrait) */
     @media print {
+      ::placeholder,
+      input::placeholder,
+      textarea::placeholder {
+        color: transparent !important;
+        opacity: 0 !important;
+        -webkit-text-fill-color: transparent !important;
+      }
+
       html, body {
         background: #ffffff !important;
         padding: 0 !important;
@@ -1275,6 +1354,11 @@
       <span>Cash Memo</span>
     </div>
     <div class="toolbar-actions">
+      <!-- Save to Database -->
+      <button type="button" class="btn btn-save" onclick="saveCurrentInvoiceToDatabase(true)" title="Save invoice details permanently to database">
+        <i class="fa-solid fa-floppy-disk"></i> Save Invoice
+      </button>
+
       <!-- Save as PDF -->
       <button type="button" class="btn btn-pdf" onclick="saveAsPdf()" title="Download Cash Memo as PDF file">
         <i class="fa-solid fa-file-pdf"></i> Save PDF
@@ -1296,11 +1380,17 @@
       </button>
 
       <!-- Visit Page / Invoices & App Dashboard -->
-      <a href="invoices.html" class="btn btn-visit" id="visitBtn" title="Open Invoice List, Search & Install App">
+      <a href="invoices.html" class="btn btn-visit" id="visitBtn" onclick="saveCurrentInvoiceToDatabase(false)" title="Open Invoice List, Search & Install App">
         <i class="fa-solid fa-layer-group"></i> Invoices & App
       </a>
     </div>
   </header>
+
+  <!-- Toast Notification Popup -->
+  <div id="toastNotification" class="toast-popup">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">Invoice saved successfully!</span>
+  </div>
 
   <!-- Cash Memo Paper Sheet -->
   <main class="memo-container" id="printableMemo">
@@ -1741,7 +1831,71 @@
       calculateTotal();
     }
 
-    // Reset Form
+    // Clean print and export preparations (strictly hides placeholders and buttons)
+    function prepareMemoForExport() {
+      const memo = document.getElementById('printableMemo');
+      memo.classList.add('is-exporting');
+
+      // Temporarily remove placeholder text on all empty inputs & textareas
+      const allInputs = memo.querySelectorAll('input, textarea');
+      allInputs.forEach(input => {
+        input.dataset.origPlaceholder = input.placeholder || '';
+        if (!input.value || !input.value.trim()) {
+          input.placeholder = '';
+        }
+      });
+
+      // Temporarily hide action controls
+      const actionControls = memo.querySelectorAll('.table-controls, .row-actions-td, .btn-del-row, .logo-change-hint, .sig-change-hint');
+      actionControls.forEach(el => {
+        el.dataset.origDisplay = el.style.display || '';
+        el.style.display = 'none';
+      });
+    }
+
+    function restoreMemoAfterExport() {
+      const memo = document.getElementById('printableMemo');
+      memo.classList.remove('is-exporting');
+
+      // Restore placeholders
+      const allInputs = memo.querySelectorAll('input, textarea');
+      allInputs.forEach(input => {
+        if (input.dataset.origPlaceholder !== undefined) {
+          input.placeholder = input.dataset.origPlaceholder;
+          delete input.dataset.origPlaceholder;
+        }
+      });
+
+      // Restore action controls
+      const actionControls = memo.querySelectorAll('.table-controls, .row-actions-td, .btn-del-row, .logo-change-hint, .sig-change-hint');
+      actionControls.forEach(el => {
+        if (el.dataset.origDisplay !== undefined) {
+          el.style.display = el.dataset.origDisplay;
+          delete el.dataset.origDisplay;
+        } else {
+          el.style.display = '';
+        }
+      });
+    }
+
+    // Attach to browser print events (Ctrl+P or Print Button)
+    window.addEventListener('beforeprint', prepareMemoForExport);
+    window.addEventListener('afterprint', restoreMemoAfterExport);
+
+    // Toast Notification helper
+    function showToastNotification(msg, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMsg');
+      if (!toast || !toastMsg) return;
+
+      toastMsg.textContent = msg;
+      toast.className = 'toast-popup show ' + type;
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
+    // Reset Form for a New Memo
     function resetForm() {
       if (confirm('Are you sure you want to start a new memo? Current entries will be cleared.')) {
         document.getElementById('custName').value = '';
@@ -1753,42 +1907,68 @@
         
         document.querySelectorAll('.note-line input').forEach(input => input.value = '');
 
-        // Auto increment invoice number
-        const currentInv = document.getElementById('invoiceNumber').value;
-        const match = currentInv.match(/#?(\d+)/);
-        if (match) {
-          const nextNum = parseInt(match[1]) + 1;
-          document.getElementById('invoiceNumber').value = '#' + String(nextNum).padStart(4, '0');
+        // Auto increment invoice number using Central Database
+        if (window.DB && typeof window.DB.getNextInvoiceNumber === 'function') {
+          document.getElementById('invoiceNumber').value = window.DB.getNextInvoiceNumber();
+        } else {
+          const currentInv = document.getElementById('invoiceNumber').value;
+          const match = currentInv.match(/#?(\d+)/);
+          if (match) {
+            const nextNum = parseInt(match[1]) + 1;
+            document.getElementById('invoiceNumber').value = '#' + String(nextNum).padStart(4, '0');
+          }
         }
         
         setDefaultDate();
         initTable();
         calculateTotal();
+        showToastNotification('নতুন ক্যাশ মেমোর ফর্ম রেডি করা হয়েছে!', 'success');
       }
     }
 
-    // Save Invoice to Database
-    function saveCurrentInvoiceToDatabase() {
-      const invNum = document.getElementById('invoiceNumber').value.trim() || '#0001';
-      const invDate = document.getElementById('invoiceDate').value.trim();
-      const name = document.getElementById('custName').value.trim();
-      const phone = document.getElementById('custPhone').value.trim();
-      const address = document.getElementById('custAddress').value.trim();
+    // Save Complete and Accurate Invoice Record to Database
+    function saveCurrentInvoiceToDatabase(showToast = false) {
+      const invNum = (document.getElementById('invoiceNumber').value || '#0001').trim();
+      const invDate = (document.getElementById('invoiceDate').value || '').trim();
+      const name = (document.getElementById('custName').value || '').trim();
+      const phone = (document.getElementById('custPhone').value || '').trim();
+      const address = (document.getElementById('custAddress').value || '').trim();
+      
+      const subTotal = parseFloat(document.getElementById('subTotal').value) || 0;
+      const deliveryCharge = parseFloat(document.getElementById('deliveryCharge').value) || 0;
       const total = parseFloat(document.getElementById('totalAmount').value) || 0;
       const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
       const due = parseFloat(document.getElementById('dueAmount').value) || 0;
 
+      // Payment method
+      let paymentMethod = '';
+      const checkedPay = document.querySelector('.payment-options input[type="checkbox"]:checked');
+      if (checkedPay) {
+        paymentMethod = checkedPay.value;
+      }
+
+      // Notes
+      const notes = [];
+      document.querySelectorAll('.note-line input').forEach(input => {
+        notes.push(input.value.trim());
+      });
+
+      // Product rows
       const items = [];
-      document.querySelectorAll('#productTableBody tr').forEach(row => {
+      document.querySelectorAll('#productTableBody tr').forEach((row, idx) => {
         const desc = row.querySelector('.row-desc') ? row.querySelector('.row-desc').value.trim() : '';
         const qty = row.querySelector('.row-qty') ? row.querySelector('.row-qty').value.trim() : '';
         const price = row.querySelector('.row-price') ? row.querySelector('.row-price').value.trim() : '';
+        const rowTotal = row.querySelector('.row-total') ? row.querySelector('.row-total').value.trim() : '';
         if (desc || qty || price) {
-          items.push({ desc, qty, price });
+          items.push({ sl: idx + 1, desc, qty, price, total: rowTotal });
         }
       });
 
-      if (!name && total === 0 && items.length === 0) return;
+      if (!name && total === 0 && items.length === 0) {
+        if (showToast) showToastNotification('ইনভয়েস সেভ করতে কাস্টমার নাম বা পণ্যের তথ্য দিন।', 'warning');
+        return false;
+      }
 
       const record = {
         id: 'inv_' + Date.now(),
@@ -1797,29 +1977,41 @@
         name: name,
         phone: phone,
         address: address,
+        items: items,
+        subtotal: subTotal,
+        deliveryCharge: deliveryCharge,
         total: total,
         paid: paid,
         due: due,
-        items: items,
-        status: (due <= 0) ? 'paid' : (paid > 0 ? 'due' : 'unpaid')
+        paymentMethod: paymentMethod,
+        notes: notes,
+        status: (due <= 0) ? 'paid' : (paid > 0 ? 'due' : 'unpaid'),
+        updatedAt: new Date().toISOString()
       };
 
-      try {
-        const raw = localStorage.getItem('memo_invoices_database');
-        let list = raw ? JSON.parse(raw) : [];
-        const existingIdx = list.findIndex(item => item.number === invNum);
-        if (existingIdx >= 0) {
-          list[existingIdx] = record;
-        } else {
-          list.unshift(record);
-        }
-        localStorage.setItem('memo_invoices_database', JSON.stringify(list));
-      } catch(e) {}
+      if (window.DB && typeof window.DB.saveInvoice === 'function') {
+        window.DB.saveInvoice(record);
+      } else {
+        try {
+          const raw = localStorage.getItem('memo_invoices_database');
+          let list = raw ? JSON.parse(raw) : [];
+          const existingIdx = list.findIndex(item => item.number === invNum);
+          if (existingIdx >= 0) list[existingIdx] = record;
+          else list.unshift(record);
+          localStorage.setItem('memo_invoices_database', JSON.stringify(list));
+        } catch(e) {}
+      }
+
+      if (showToast) {
+        showToastNotification(`ইনভয়েস ${invNum} (${name || 'ক্যাশ মেমো'}) সফলভাবে ডাটাবেজে সংরক্ষণ করা হয়েছে!`, 'success');
+      }
+      return true;
     }
 
     // Save as PDF (Direct Download)
     async function saveAsPdf() {
-      saveCurrentInvoiceToDatabase();
+      saveCurrentInvoiceToDatabase(false);
+      prepareMemoForExport();
       const memo = document.getElementById('printableMemo');
       const invNum = (document.getElementById('invoiceNumber').value || 'memo').replace(/[^a-zA-Z0-9_-]/g, '_');
       const fileName = `CashMemo_${invNum}.pdf`;
@@ -1864,6 +2056,7 @@
         console.error('PDF Export Error:', e);
         window.print();
       } finally {
+        restoreMemoAfterExport();
         if (btn) {
           btn.innerHTML = originalHtml;
           btn.disabled = false;
@@ -1873,7 +2066,8 @@
 
     // Save as High Resolution Image (Direct Download PNG)
     async function saveAsImage() {
-      saveCurrentInvoiceToDatabase();
+      saveCurrentInvoiceToDatabase(false);
+      prepareMemoForExport();
       const memo = document.getElementById('printableMemo');
       const invNum = (document.getElementById('invoiceNumber').value || 'memo').replace(/[^a-zA-Z0-9_-]/g, '_');
       const fileName = `CashMemo_${invNum}.png`;
@@ -1932,6 +2126,7 @@
         console.error('Image Export Error:', e);
         alert('Could not export image directly: ' + e.message);
       } finally {
+        restoreMemoAfterExport();
         if (btn) {
           btn.innerHTML = originalHtml;
           btn.disabled = false;
@@ -1941,7 +2136,7 @@
 
     // Direct Print
     function printMemo() {
-      saveCurrentInvoiceToDatabase();
+      saveCurrentInvoiceToDatabase(false);
       window.print();
     }
 
@@ -1975,36 +2170,69 @@
         const urlParams = new URLSearchParams(window.location.search);
         const targetInv = urlParams.get('inv');
         if (targetInv) {
-          const raw = localStorage.getItem('memo_invoices_database');
-          if (raw) {
-            const list = JSON.parse(raw);
-            const found = list.find(item => item.number === targetInv);
-            if (found) {
-              document.getElementById('invoiceNumber').value = found.number || targetInv;
-              if (found.date) document.getElementById('invoiceDate').value = found.date;
-              if (found.name) document.getElementById('custName').value = found.name;
-              if (found.phone) document.getElementById('custPhone').value = found.phone;
-              if (found.address) document.getElementById('custAddress').value = found.address;
-              if (found.paid !== undefined) document.getElementById('paidAmount').value = found.paid;
-
-              if (found.items && found.items.length > 0) {
-                const tbody = document.getElementById('productTableBody');
-                tbody.innerHTML = '';
-                found.items.forEach((it, idx) => {
-                  tbody.appendChild(createRow(idx + 1, it.desc, it.qty, it.price));
-                });
-                let rCount = found.items.length;
-                while (rCount < 5) {
-                  rCount++;
-                  tbody.appendChild(createRow(rCount, '', '', ''));
-                }
-                rowCount = rCount;
-              }
-              calculateTotal();
+          let found = null;
+          if (window.DB && typeof window.DB.getInvoice === 'function') {
+            found = window.DB.getInvoice(targetInv);
+          }
+          if (!found) {
+            const raw = localStorage.getItem('memo_invoices_database');
+            if (raw) {
+              const list = JSON.parse(raw);
+              found = list.find(item => item.number === targetInv);
             }
           }
+
+          if (found) {
+            document.getElementById('invoiceNumber').value = found.number || targetInv;
+            if (found.date) document.getElementById('invoiceDate').value = found.date;
+            if (found.name) document.getElementById('custName').value = found.name;
+            if (found.phone) document.getElementById('custPhone').value = found.phone;
+            if (found.address) document.getElementById('custAddress').value = found.address;
+            if (found.deliveryCharge !== undefined) document.getElementById('deliveryCharge').value = found.deliveryCharge;
+            if (found.paid !== undefined) document.getElementById('paidAmount').value = found.paid;
+
+            // Restore items
+            if (found.items && found.items.length > 0) {
+              const tbody = document.getElementById('productTableBody');
+              tbody.innerHTML = '';
+              found.items.forEach((it, idx) => {
+                tbody.appendChild(createRow(idx + 1, it.desc, it.qty, it.price));
+              });
+              let rCount = found.items.length;
+              while (rCount < 5) {
+                rCount++;
+                tbody.appendChild(createRow(rCount, '', '', ''));
+              }
+              rowCount = rCount;
+            }
+
+            // Restore Payment Method
+            if (found.paymentMethod) {
+              document.querySelectorAll('.payment-options input[type="checkbox"]').forEach(cb => {
+                cb.checked = (cb.value.toLowerCase() === found.paymentMethod.toLowerCase());
+              });
+            }
+
+            // Restore Notes
+            if (found.notes && Array.isArray(found.notes)) {
+              const noteInputs = document.querySelectorAll('.note-line input');
+              found.notes.forEach((val, i) => {
+                if (noteInputs[i]) noteInputs[i].value = val;
+              });
+            }
+
+            calculateTotal();
+            showToastNotification(`ইনভয়েস ${found.number} লোড করা হয়েছে!`, 'success');
+          }
+        } else {
+          // No invoice requested, auto-assign next fresh invoice number!
+          if (window.DB && typeof window.DB.getNextInvoiceNumber === 'function') {
+            document.getElementById('invoiceNumber').value = window.DB.getNextInvoiceNumber();
+          }
         }
-      } catch(e) {}
+      } catch(e) {
+        console.error('Error initializing invoice:', e);
+      }
     };
 
     // Register Service Worker for PWA
